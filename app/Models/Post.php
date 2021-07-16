@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class Post extends Model
@@ -39,7 +40,17 @@ class Post extends Model
         parent::boot();
 
         static::saving(function ($post) {
-            $post->user_id = Auth::user()->id;
+            $post->user_id = Auth::check() ? Auth::user()->id : 1;
         });
+    }
+
+    public function getCreatedAtAttribute($date)
+    {
+        return Carbon::parse($date)->format('Y-m-d H:i');
+    }
+
+    public function getUpdatedAtAttribute($date)
+    {
+        return Carbon::parse($date)->format('Y-m-d H:i');
     }
 }

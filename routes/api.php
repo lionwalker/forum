@@ -16,9 +16,22 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth:api'])->group(function () {
-    Route::resource('post',PostController::class)->except('create','show','edit');
-    Route::resource('user',UserController::class)->except('create','show','edit');
+Route::post('/login',[UserController::class,'login']);
+Route::post('/register',[UserController::class,'store']);
+
+Route::middleware(['auth:sanctum'])->group(function () {
+
+    Route::get('/posts',[PostController::class,'posts']);
+    Route::get('/posts/{post}',[PostController::class,'show']);
+    Route::delete('/posts/{post}',[PostController::class,'destroy']);
+    Route::put('/posts/{post}',[PostController::class,'update']);
+    Route::get('/posts/search/{keyword}',[PostController::class,'search']);
+    Route::post('/posts',[PostController::class,'store']);
+    Route::get('/my-posts',[PostController::class,'userPosts']);
+    Route::get('/profile',[UserController::class,'profile']);
+    Route::put('/users/{user}',[UserController::class,'update']);
+    Route::post('/logout',[UserController::class,'logout']);
+
 });
 
 

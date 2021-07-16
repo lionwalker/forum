@@ -42,12 +42,12 @@
                             <tr class="table-row">
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $user->name }}</td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $user->email }}</td>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm w-1/12">
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                     <a href="{{ $isAdmin ? url("/users/make-admin/$user->id") : '#' }}" class="inline-block rounded-full text-white {{ $user->admin ? 'bg-green-400 hover:bg-green-500' : 'bg-red-400 hover:bg-red-500' }} duration-300 text-xs font-bold mr-1 md:mr-2 mb-2 px-2 md:px-4 py-1 opacity-90 hover:opacity-100">
                                         {{ $user->admin ? 'is-admin' : 'not-admin' }}
                                     </a>
                                 </td>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm w-1/12">
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                     <a href="{{ $isAdmin ? url("/users/block/$user->id") : '#' }}" class="inline-block rounded-full text-white {{ !$user->blocked ? 'bg-green-400 hover:bg-green-500' : 'bg-red-400 hover:bg-red-500' }} duration-300 text-xs font-bold mr-1 md:mr-2 mb-2 px-2 md:px-4 py-1 opacity-90 hover:opacity-100">
                                         {{ !$user->blocked ? 'enabled' : 'blocked' }}
                                     </a>

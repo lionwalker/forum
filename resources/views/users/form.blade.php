@@ -34,6 +34,10 @@
                         <x-label for="email" :value="__('Email')" />
                         <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="$user->email" required autofocus />
                     </div>
+                    <div>
+                        <x-label for="name" class="mt-3" :value="__('Is Admin')" />
+                        <x-checkbox id="admin" class="block mt-1" name="admin" :checked="$user->admin"/>
+                    </div>
                     @if (empty($user->id))
                         <div class="mt-4">
                             <x-label for="password" :value="__('Password')" />

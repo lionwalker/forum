@@ -3,14 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
-use App\Models\Post;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 
 class UserController extends Controller
@@ -18,7 +15,7 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
     public function index()
     {
@@ -32,24 +29,22 @@ class UserController extends Controller
      * Store a newly created resource in storage.
      *
      * @param UserRequest $userRequest
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function store(UserRequest $userRequest)
     {
-        $validated = $userRequest->validate([
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
-        $request = $userRequest->except('_token');
-        $isAdmin = !empty($request['admin']) ? 1 : 0;
+        $validated = $userRequest->except('_token');
+        $isAdmin = !empty($validated['admin']) ? 1 : 0;
         $user = User::create([
-            'name' => $request['name'],
-            'email' => $request['email'],
-            'password' => Hash::make($request['password']),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
             'admin' => $isAdmin
         ]);
 
-        return $userRequest->wantsJson() ? $this->sendResponse($user, 'User created successfully') : Redirect::route('users.index')->with(['message' => 'User created successfully', 'type' => 'success']);
+        $token = $user->createToken('forum-app')->plainTextToken;
+
+        return $userRequest->wantsJson() ? $this->sendResponse($user, 'User created successfully', $token) : Redirect::route('users.index')->with(['message' => 'User created successfully', 'type' => 'success']);
     }
 
     /**
@@ -57,7 +52,7 @@ class UserController extends Controller
      *
      * @param Request $request
      * @param User $user
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, User $user)
     {
@@ -66,8 +61,10 @@ class UserController extends Controller
             'email' => "required|string|email|max:255|unique:users,email,$user->id",
         ]);
 
-        $user->name = $request->name;
-        $user->email = $request->email;
+        $isAdmin = !empty($validated['admin']) ? 1 : 0;
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->admin = $isAdmin;
         $user->save();
 
         return $request->wantsJson() ? $this->sendResponse($user, 'User updated successfully') : Redirect::route('users.index')->with(['message' => 'User updated successfully', 'type' => 'success']);
@@ -78,7 +75,7 @@ class UserController extends Controller
      *
      * @param Request $request
      * @param User $user
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function destroy(Request $request, User $user)
     {
@@ -89,7 +86,7 @@ class UserController extends Controller
     /**
      * send empty user object.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
     public function addNewUser()
     {
@@ -101,7 +98,7 @@ class UserController extends Controller
      * get individual post data from given id..
      *
      * @param User $user
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
     public function getUserData(User $user)
     {
@@ -112,7 +109,7 @@ class UserController extends Controller
      * give selected users admin privileges.
      *
      * @param User $user
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function makeUserAdmin(User $user)
     {
@@ -130,7 +127,7 @@ class UserController extends Controller
      * block selected users to prevent spamming.
      *
      * @param User $user
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function blockUser(User $user)
     {
@@ -142,5 +139,60 @@ class UserController extends Controller
         $user->save();
 
         return Redirect::route('users.index')->with(['message' => $message, 'type' => 'success']);
+    }
+
+    /**
+     *  Return logged in user data.
+     *
+     * @return array[]
+     */
+    public function profile()
+    {
+        $user = Auth::user();
+        return [
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ]
+        ];
+    }
+
+    /**
+     * Login API users.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function login(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|string|email|max:255',
+            'password' => ['required', Rules\Password::defaults()],
+        ]);
+
+        // Check email
+        $user = User::whereEmail($validated['email'])->first();
+
+        // Check password
+        if (!$user || !Hash::check($validated['password'], $user->password)) {
+            return $this->sendError(null, 'Logging in unsuccessful');
+        }
+
+        $token = $user->createToken('forum-app')->plainTextToken;
+
+        return $this->sendResponse(null, 'Logged in successfully', $token);
+    }
+
+    /**
+     * Logout API users.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function logout(Request $request)
+    {
+        auth()->user()->tokens()->delete();
+        return $this->sendResponse(null, 'Logged out successfully');
     }
 }

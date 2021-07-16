@@ -17,7 +17,7 @@ class PostSeeder extends Seeder
     public function run()
     {
         Post::factory()
-            ->count(rand(0,50))
+            ->count(30)
             ->for(User::all()->random())
             ->state(new Sequence(
                 [

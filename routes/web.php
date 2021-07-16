@@ -17,10 +17,10 @@ use App\Http\Controllers\UserController;
 |
 */
 
-Route::get('/', [AuthenticatedSessionController::class, 'create'])->middleware('guest')
-    ->name('login');
+Route::get('/', [AuthenticatedSessionController::class, 'create'])->middleware('guest');
 
 Route::middleware(['auth'])->group(function () {
+
     Route::get('/dashboard', [DashboardController::class,'index'])->name('dashboard');
     Route::resource('posts',PostController::class)->except('create','show','edit');
     Route::get('posts/add',[PostController::class,'addNewPost']);
@@ -34,6 +34,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('users/add',[UserController::class,'addNewUser']);
     Route::get('users/edit/{user}',[UserController::class,'getUserData']);
     Route::delete('users/delete/{user}',[UserController::class,'destroy']);
+
 });
 
 require __DIR__.'/auth.php';

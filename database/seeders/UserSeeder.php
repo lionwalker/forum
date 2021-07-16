@@ -31,6 +31,10 @@ class UserSeeder extends Seeder
             ]
         ];
 
-        User::insert($users);
+        foreach ($users as $rawUser) {
+            $user = User::create($rawUser);
+            $user->createToken('forum-app')->plainTextToken;
+        }
+
     }
 }
