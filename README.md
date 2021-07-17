@@ -66,11 +66,15 @@ You're ready to go! Visit forum in your browser, and login with:
 - **Username:** admin@admin.com
 - **Password:** Admin@123
 
-## Proposed improvements
+### API documentation
+
+- https://documenter.getpostman.com/view/11193587/TzmCgD5L
+
+### Proposed improvements
 
 - Can implement authorization part by using packages like spatie permissions
 - Can implement activity log easily with packages like spatie activity logs
 
-## Notes
+### Notes
 
 - Added CROS middleware to enable Access-Control-Allow-Methods 
